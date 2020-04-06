@@ -801,6 +801,7 @@ static int b44_rx(struct b44 *bp, int budget)
 		if (len == 0 || (len > (RX_PKT_BUF_SZ - RX_PKT_OFFSET)) ||
 		    (rh->flags & cpu_to_le16(RX_FLAG_ERRORS))) {
 		drop_it:
+			netdev_dbg(bp->dev, "Drop: len:%d, flags:%08x\n", len, rh->flags);
 			b44_recycle_rx(bp, cons, bp->rx_prod);
 			bp->dev->stats.rx_dropped++;
 			goto next_pkt;
