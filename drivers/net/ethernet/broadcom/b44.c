@@ -802,7 +802,6 @@ static int b44_rx(struct b44 *bp, int budget)
 		    (rh->flags & cpu_to_le16(RX_FLAG_ERRORS))) {
 		drop_it:
 			b44_recycle_rx(bp, cons, bp->rx_prod);
-		drop_it_no_recycle:
 			bp->dev->stats.rx_dropped++;
 			goto next_pkt;
 		}
@@ -823,16 +822,16 @@ static int b44_rx(struct b44 *bp, int budget)
 		} else {
 			struct sk_buff *copy_skb;
 
-			b44_recycle_rx(bp, cons, bp->rx_prod);
 			copy_skb = napi_alloc_skb(&bp->napi, len);
 			if (copy_skb == NULL)
-				goto drop_it_no_recycle;
+				goto drop_it;
 
 			skb_put(copy_skb, len);
 			/* DMA sync done above, copy just the actual packet */
 			skb_copy_from_linear_data_offset(skb, RX_PKT_OFFSET,
 							 copy_skb->data, len);
 			skb = copy_skb;
+			b44_recycle_rx(bp, cons, bp->rx_prod);
 		}
 		skb_checksum_none_assert(skb);
 		skb->protocol = eth_type_trans(skb, bp->dev);
