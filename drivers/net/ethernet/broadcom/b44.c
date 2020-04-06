@@ -846,7 +846,7 @@ static int b44_rx(struct b44 *bp, int budget)
 	}
 
 	bp->rx_cons = cons;
-	bw32(bp, B44_DMARX_PTR, cons * sizeof(struct dma_desc));
+	bw32(bp, B44_DMARX_PTR, bp->rx_prod * sizeof(struct dma_desc));
 
 	return received;
 }
@@ -1425,7 +1425,7 @@ static void b44_init_hw(struct b44 *bp, int reset_kind)
 				      (RX_PKT_OFFSET << DMARX_CTRL_ROSHIFT)));
 		bw32(bp, B44_DMARX_ADDR, bp->rx_ring_dma + bp->dma_offset);
 
-		bw32(bp, B44_DMARX_PTR, bp->rx_pending);
+		bw32(bp, B44_DMARX_PTR, bp->rx_pending * sizeof(struct dma_desc));
 		bp->rx_prod = bp->rx_pending;
 
 		bw32(bp, B44_MIB_CTRL, MIB_CTRL_CLR_ON_READ);
