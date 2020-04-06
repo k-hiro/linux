@@ -798,25 +798,13 @@ static int b44_rx(struct b44 *bp, int budget)
 					DMA_FROM_DEVICE);
 		rh = (struct rx_header *) skb->data;
 		len = le16_to_cpu(rh->len);
-		if ((len > (RX_PKT_BUF_SZ - RX_PKT_OFFSET)) ||
+		if (len == 0 || (len > (RX_PKT_BUF_SZ - RX_PKT_OFFSET)) ||
 		    (rh->flags & cpu_to_le16(RX_FLAG_ERRORS))) {
 		drop_it:
 			b44_recycle_rx(bp, cons, bp->rx_prod);
 		drop_it_no_recycle:
 			bp->dev->stats.rx_dropped++;
 			goto next_pkt;
-		}
-
-		if (len == 0) {
-			int i = 0;
-
-			do {
-				udelay(2);
-				barrier();
-				len = le16_to_cpu(rh->len);
-			} while (len == 0 && i++ < 5);
-			if (len == 0)
-				goto drop_it;
 		}
 
 		/* Omit CRC. */
