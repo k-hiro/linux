@@ -1956,8 +1956,8 @@ static void b44_get_ringparam(struct net_device *dev,
 
 	ering->rx_max_pending = B44_RX_RING_SIZE - 1;
 	ering->rx_pending = bp->rx_pending;
-
-	/* XXX ethtool lacks a tx_max_pending, oops... */
+	ering->tx_max_pending = B44_TX_RING_SIZE - 1;
+	ering->tx_pending = bp->tx_pending;
 }
 
 static int b44_set_ringparam(struct net_device *dev,
@@ -1973,8 +1973,10 @@ static int b44_set_ringparam(struct net_device *dev,
 
 	spin_lock_irq(&bp->lock);
 
-	bp->rx_pending = ering->rx_pending;
-	bp->tx_pending = ering->tx_pending;
+	if (ering->rx_pending != 0)
+		bp->rx_pending = ering->rx_pending;
+	if (ering->tx_pending != 0)
+		bp->tx_pending = ering->tx_pending;
 
 	b44_halt(bp);
 	b44_init_rings(bp);
